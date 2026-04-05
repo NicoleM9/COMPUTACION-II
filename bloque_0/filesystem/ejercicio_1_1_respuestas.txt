@@ -1,1 +1,253 @@
+Ejercicio 1.1 - Exploración del sistema
 
+1) ¿Cuántos archivos hay directamente en /etc?
+
+Comando:
+ls -l /etc | grep '^-' | wc -l
+
+Resultado:
+91
+
+Explicación:
+Se cuentan solo archivos regulares usando grep '^-'.
+
+--------------------------------------------------
+
+2) Tamaño de /etc/passwd
+
+Comando:
+stat -c %s /etc/passwd
+
+Resultado:
+2982 bytes
+
+Explicación:
+stat muestra el tamaño exacto en bytes.
+
+--------------------------------------------------
+
+3) Tipo de /dev/null
+
+Comando:
+file /dev/null
+
+Resultado:
+character special (1/3)
+
+Explicación:
+Es un dispositivo de caracteres virtual gestionado por el kernel. 
+Es especial porque descarta toda la información que se escribe en él y no devuelve datos al leerlo, actuando como un "agujero negro" de datos.
+-------------------------------------------------
+4) ¿A dónde apunta el enlace simbólico /bin?
+
+Comando:
+readlink /bin
+
+Resultado:
+usr/bin
+
+Explicación:
+El directorio /bin es un enlace simbólico que apunta a /usr/bin en sistemas modernos. Esto forma parte de la unificación del sistema de archivos, donde los 
+binarios principales se centralizan en /usr/bin.
+------------------------------------------------
+5) ¿Cuál es el número de inodo de .bashrc?
+
+Comando:
+ls -i ~/.bashrc
+
+Resultado:
+[tu_numero_de_inodo] .bashrc
+
+Explicación:
+El número de inodo identifica de forma única al archivo dentro del sistema de archivos. Es la estructura interna que contiene la metadata del archivo, 
+independientemente de su nombre.
+-----------------------------------------------
+5) ¿Cuál es el número de inodo de .bashrc?
+
+Comando:
+ls -i ~/.bashrc
+
+Resultado:
+1572868 /home/nicole/.bashrc
+
+Explicación:
+El número de inodo es 1572868. Este número identifica de manera única al archivo dentro del sistema de archivos y contiene su metadata, independientemente del 
+nombre del archivo.
+-----------------------------------------------
+6) ¿Cuántos enlaces duros tiene el directorio /home? ¿Por qué tiene ese número?
+
+Comando:
+stat /home
+
+Resultado:
+Links: 3
+
+Explicación:
+El directorio /home tiene 3 enlaces duros. Esto se debe a que el número de enlaces en un directorio es igual a 2 más la cantidad de subdirectorios que contiene. 
+En este caso, hay 1 subdirectorio dentro de /home, por lo tanto: 2 + 1 = 3.
+----------------------------------------------
+Ejercicio 1.2 - Permisos en Linux
+
+Paso 1: Crear un script
+
+Comando:
+echo 'echo "Hola desde el script"' > mi_script.sh
+
+Explicación:
+Se crea un archivo llamado mi_script.sh que contiene un comando echo.
+--------------------------------------------------
+Paso 2: Intentar ejecutarlo
+
+Comando:
+./mi_script.sh
+
+Resultado:
+Permiso denegado
+
+Explicación:
+El error ocurre porque el archivo no tiene permisos de ejecución. En Linux, un script necesita el permiso "x" para poder ejecutarse.
+--------------------------------------------------
+Paso 3: Ver permisos actuales
+
+Comando:
+ls -l mi_script.sh
+
+Resultado:
+-rw-rw-r-- 1 nicole nicole 28 abr  4 21:11 mi_script.sh
+
+Explicación:
+El significado de los permisos es:
+
+- El primer carácter "-" indica que es un archivo regular
+- rw- (dueño): puede leer y escribir
+- r-- (grupo): solo puede leer
+- r-- (otros): solo pueden leer
+--------------------------------------------------
+Paso 4: Agregar permiso de ejecución
+
+Comando:
+chmod +x mi_script.sh
+
+Explicación:
+Se agrega el permiso de ejecución al archivo para todos los usuarios.
+--------------------------------------------------
+Paso 5: Verificar permisos y ejecutar
+
+Comando:
+ls -l mi_script.sh
+
+Resultado:
+-rwxrwxr-x 1 nicole nicole 28 abr  4 21:11 mi_script.sh
+
+Comando:
+./mi_script.sh
+
+Resultado:
+Hola desde el script
+
+Explicación:
+Ahora el archivo tiene permiso de ejecución (x), por lo que el sistema puede interpretarlo como un programa y ejecutarlo correctamente.
+
+--------------------------------------------------
+Preguntas teóricas
+
+1) ¿Cuál es la diferencia entre chmod +x y chmod 755?
+- chmod +x agrega el permiso de ejecución sin modificar los permisos existentes.
+- chmod 755 establece los permisos explícitamente como rwxr-xr-x, asignando lectura, escritura y ejecución al dueño, y solo lectura y ejecución al grupo y otros.
+--------------------------------------------------
+2) Si el archivo tiene permisos 644, ¿qué usuarios pueden leerlo? ¿Quiénes pueden escribirlo?
+Permisos 644 corresponden a rw-r--r--:
+- Dueño: puede leer y escribir
+- Grupo: puede leer
+- Otros: pueden leer
+Solo el dueño puede modificar el archivo.
+--------------------------------------------------
+3) ¿Por qué los directorios necesitan permiso de ejecución (x) para poder entrar en ellos?
+El permiso de ejecución en un directorio permite "atravesarlo" (traverse). Sin este permiso, no es posible acceder a su contenido ni usar cd para entrar en él, 
+incluso si se tienen permisos de lectura.
+--------------------------------------------------
+Ejercicio 1.3 - Enlaces duros vs simbólicos
+
+Comandos:
+mkdir experimento_enlaces
+cd experimento_enlaces
+echo "Este es el contenido original" > original.txt
+
+Explicación:
+Se crea un directorio de trabajo y un archivo llamado original.txt con contenido inicial.
+--------------------------------------------------
+Paso 1: Crear ambos tipos de enlaces
+Comandos:
+ln original.txt enlace_duro.txt
+ln -s original.txt enlace_simbolico.txt
+
+Explicación:
+- ln crea un enlace duro (hard link)
+- ln -s crea un enlace simbólico (soft link)
+--------------------------------------------------
+Paso 2: Ver inodos
+Comando:
+ls -li
+
+total 8
+1578200 -rw-rw-r-- 2 nicole nicole 30 abr  4 21:30 enlace_duro.txt
+1578191 lrwxrwxrwx 1 nicole nicole 12 abr  4 21:30 enlace_simbolico.txt -> original.txt
+1578200 -rw-rw-r-- 2 nicole nicole 30 abr  4 21:30 original.txt
+
+Explicación:
+El enlace duro comparte el mismo inodo que el archivo original, lo que indica que ambos apuntan a la misma estructura interna del sistema de archivos. 
+El enlace simbólico tiene un inodo diferente porque es un archivo independiente que solo referencia la ruta del original.
+--------------------------------------------------
+Paso 3: Verificar contador de enlaces
+
+Comando:
+stat original.txt | grep Links
+
+Resultado:
+Links: 2
+
+Explicación:
+El archivo tiene 2 enlaces duros: el original y el enlace_duro.txt. Ambos apuntan al mismo inodo.
+--------------------------------------------------
+Paso 4: Eliminar el archivo original
+
+Comando:
+rm original.txt
+
+Explicación:
+Se elimina el nombre original del archivo, pero el contenido puede seguir existiendo si hay otros enlaces duros.
+--------------------------------------------------
+Paso 5: Intentar leer los enlaces
+
+Comandos:
+cat enlace_duro.txt
+cat enlace_simbolico.txt
+
+Resultado:
+Este es el contenido original
+cat: enlace_simbolico.txt: No existe el archivo o el directorio
+
+Explicación:
+El enlace duro sigue funcionando porque apunta directamente al inodo, que aún existe. El enlace simbólico deja de funcionar porque apunta a una ruta 
+(original.txt) que ya no existe.
+--------------------------------------------------
+Paso 6: Verificar con ls -l
+
+Comando:
+ls -l
+
+Resultado:
+total 4
+-rw-rw-r-- 1 nicole nicole 30 abr  4 21:30 enlace_duro.txt
+lrwxrwxrwx 1 nicole nicole 12 abr  4 21:30 enlace_simbolico.txt -> original.txt
+
+El enlace simbólico aparece en rojo o con indicación de que está roto.
+
+Explicación:
+El sistema detecta que el destino del enlace simbólico no existe y lo marca como enlace roto.
+--------------------------------------------------
+¿Cuándo usar cada tipo de enlace?
+- Enlaces duros: se utilizan cuando se necesita asegurar que el archivo siga existiendo aunque se elimine uno de sus nombres. Son más robustos, pero no pueden 
+cruzar sistemas de archivos ni apuntar a directorios.
+- Enlaces simbólicos: son más flexibles, ya que pueden apuntar a directorios y a archivos en otros sistemas de archivos, pero dependen de que la ruta de destino 
+exista.
